@@ -34,21 +34,30 @@ export default function LectureList() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mt-3">
-                        <div className="flex items-center gap-1">
-                            <Clock size={14} />
-                            <span>
-                                {lecture.schedule.days.join(', ')} • {lecture.schedule.startTime} - {lecture.schedule.endTime}
-                            </span>
-                        </div>
-                    </div>
 
-                    {lecture.schedule.location && (
-                        <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-                            <MapPin size={14} />
-                            <span>{lecture.schedule.location}</span>
-                        </div>
-                    )}
+                    {/* Display all schedules */}
+                    <div className="space-y-2 mt-3">
+                        {lecture.schedules && lecture.schedules.length > 0 ? (
+                            lecture.schedules.map((schedule, idx) => (
+                                <div key={idx} className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+                                    <div className="flex items-center gap-1">
+                                        <Clock size={14} />
+                                        <span>
+                                            {schedule.days.join(', ')} • {schedule.startTime} - {schedule.endTime}
+                                        </span>
+                                    </div>
+                                    {schedule.location && (
+                                        <div className="flex items-center gap-1 text-gray-500">
+                                            <MapPin size={14} />
+                                            <span>{schedule.location}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-sm text-gray-400 italic">No schedule information</div>
+                        )}
+                    </div>
                 </Card>
             ))}
         </div>

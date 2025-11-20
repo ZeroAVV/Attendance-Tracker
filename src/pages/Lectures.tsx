@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import LectureList from '../components/LectureList';
 import LectureForm from '../components/LectureForm';
-import { Plus, Upload } from 'lucide-react';
+import { Plus, Upload, Edit3 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { getThemeClasses } from '../utils/themeUtils';
 import { clsx } from 'clsx';
 import OCRUploader from '../components/OCRUploader';
+import ManualTimetableEntry from '../components/ManualTimetableEntry';
 
 export default function Lectures() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isOCROpen, setIsOCROpen] = useState(false);
+    const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
     const themeColor = useStore((state) => state.themeColor);
     const theme = getThemeClasses(themeColor);
 
@@ -20,9 +22,16 @@ export default function Lectures() {
                 <h1 className="text-3xl font-bold">Lectures</h1>
                 <div className="flex gap-2">
                     <button
+                        onClick={() => setIsManualEntryOpen(true)}
+                        className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 p-3 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        title="Manual Entry (Bulk)"
+                    >
+                        <Edit3 size={24} />
+                    </button>
+                    <button
                         onClick={() => setIsOCROpen(true)}
                         className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 p-3 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        title="Import Timetable"
+                        title="Import Timetable (OCR)"
                     >
                         <Upload size={24} />
                     </button>
@@ -33,6 +42,7 @@ export default function Lectures() {
                             theme.primary,
                             theme.primaryHover
                         )}
+                        title="Add Single Lecture"
                     >
                         <Plus size={24} />
                     </button>
@@ -50,6 +60,11 @@ export default function Lectures() {
                 {isOCROpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <OCRUploader onClose={() => setIsOCROpen(false)} />
+                    </div>
+                )}
+                {isManualEntryOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <ManualTimetableEntry onClose={() => setIsManualEntryOpen(false)} />
                     </div>
                 )}
             </AnimatePresence>

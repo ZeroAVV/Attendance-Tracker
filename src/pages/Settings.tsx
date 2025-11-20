@@ -54,15 +54,42 @@ export default function Settings() {
                 </h2>
                 <Card>
                     <div className="space-y-4">
+                        <div className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-gray-700">
+                            <div>
+                                <h3 className="font-medium">Clear All Lectures</h3>
+                                <p className="text-sm text-gray-500">Delete all lectures only (keeps attendance records).</p>
+                            </div>
+                            <Button variant="danger" size="sm" onClick={async () => {
+                                if (confirm('Delete all lectures? This cannot be undone.')) {
+                                    await useStore.getState().clearAllLectures();
+                                }
+                            }}>
+                                <Trash2 size={16} />
+                            </Button>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-gray-700">
+                            <div>
+                                <h3 className="font-medium">Clear All Attendance</h3>
+                                <p className="text-sm text-gray-500">Delete all attendance records only (keeps lectures).</p>
+                            </div>
+                            <Button variant="danger" size="sm" onClick={async () => {
+                                if (confirm('Delete all attendance records? This cannot be undone.')) {
+                                    await useStore.getState().clearAllAttendance();
+                                }
+                            }}>
+                                <Trash2 size={16} />
+                            </Button>
+                        </div>
+
                         <div className="flex justify-between items-center">
                             <div>
-                                <h3 className="font-medium">Clear All Data</h3>
-                                <p className="text-sm text-gray-500">Delete all lectures and attendance records.</p>
+                                <h3 className="font-medium text-red-600 dark:text-red-400">Clear All Data</h3>
+                                <p className="text-sm text-gray-500">Delete everything - lectures and attendance records.</p>
                             </div>
-                            <Button variant="danger" size="sm" onClick={() => {
-                                if (confirm('Are you sure? This cannot be undone.')) {
-                                    // Logic to clear DB would go here
-                                    alert('Feature coming soon');
+                            <Button variant="danger" size="sm" onClick={async () => {
+                                if (confirm('⚠️ DELETE EVERYTHING? This will remove all your lectures and attendance records. This cannot be undone!')) {
+                                    await useStore.getState().clearAllData();
                                 }
                             }}>
                                 <Trash2 size={16} />

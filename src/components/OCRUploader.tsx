@@ -125,7 +125,7 @@ export default function OCRUploader({ onClose }: OCRUploaderProps) {
                                         <div>
                                             <h4 className="font-bold">{lecture.name}</h4>
                                             <p className="text-xs text-gray-500">
-                                                {lecture.schedule.days.join(', ')} • {lecture.schedule.startTime} - {lecture.schedule.endTime}
+                                                {lecture.schedules[0].days.join(', ')} • {lecture.schedules[0].startTime} - {lecture.schedules[0].endTime}
                                             </p>
                                         </div>
                                         <Check size={16} className="text-green-500" />

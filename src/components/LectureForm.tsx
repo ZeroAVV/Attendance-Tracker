@@ -33,12 +33,12 @@ export default function LectureForm({ onClose }: LectureFormProps) {
             name: formData.name,
             courseCode: formData.courseCode,
             professor: formData.professor,
-            schedule: {
+            schedules: [{
                 days: formData.days,
                 startTime: formData.startTime,
                 endTime: formData.endTime,
                 location: formData.location,
-            },
+            }],
             targetPercentage: formData.targetPercentage,
         });
         onClose();
