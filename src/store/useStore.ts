@@ -4,10 +4,12 @@ import { dbPromise, type Lecture, type AttendanceRecord } from '../db/db';
 interface State {
     lectures: Lecture[];
     attendance: AttendanceRecord[];
+    themeColor: 'blue' | 'purple' | 'green' | 'red' | 'orange';
     isLoading: boolean;
     error: string | null;
 
     // Actions
+    setThemeColor: (color: 'blue' | 'purple' | 'green' | 'red' | 'orange') => void;
     fetchData: () => Promise<void>;
     addLecture: (lecture: Omit<Lecture, 'id'>) => Promise<void>;
     updateLecture: (id: string, updates: Partial<Lecture>) => Promise<void>;
@@ -19,8 +21,11 @@ interface State {
 export const useStore = create<State>((set, get) => ({
     lectures: [],
     attendance: [],
+    themeColor: 'blue',
     isLoading: true,
     error: null,
+
+    setThemeColor: (color) => set({ themeColor: color }),
 
     fetchData: async () => {
         try {

@@ -1,0 +1,40 @@
+# Attendance Tracker App - Task List
+
+- [ ] Project Initialization <!-- id: 0 -->
+    - [x] Scaffold Vite + React + TypeScript project <!-- id: 1 -->
+    - [x] Configure Tailwind CSS <!-- id: 2 -->
+    - [x] Install core dependencies (Zustand, React Router, date-fns, lucide-react, idb) <!-- id: 3 -->
+- [ ] Core Architecture Setup <!-- id: 4 -->
+    - [x] Setup Store (Zustand) for Lectures and Attendance <!-- id: 5 -->
+    - [x] Setup Database Layer (IndexedDB wrapper) <!-- id: 6 -->
+    - [x] Setup Routing <!-- id: 7 -->
+- [ ] Feature: Lecture Management (CRUD) <!-- id: 8 -->
+    - [x] Create Lecture List View <!-- id: 9 -->
+    - [x] Create Add/Edit Lecture Form <!-- id: 10 -->
+    - [x] Implement Delete functionality <!-- id: 11 -->
+- [ ] Feature: Attendance Tracking <!-- id: 12 -->
+    - [x] Implement Dashboard with Today's Lectures <!-- id: 13 -->
+    - [x] Implement Quick Mark (Present/Absent) <!-- id: 14 -->
+    - [ ] Implement Calendar View <!-- id: 15 -->
+- [ ] Feature: Statistics & Analytics <!-- id: 16 -->
+    - [x] Calculate Attendance Percentage <!-- id: 17 -->
+    - [x] Visual Indicators (Progress bars, Color coding) <!-- id: 18 -->
+- [x] UI/UX Polish <!-- id: 19 -->
+    - [x] Responsive Design <!-- id: 20 -->
+    - [x] Dark Mode Support <!-- id: 21 -->
+    - [x] Animations (Framer Motion or CSS) <!-- id: 22 -->
+- [x] Documentation <!-- id: 23 -->
+    - [x] Create Android Migration Guide <!-- id: 24 -->
+- [x] Feature: Calendar View <!-- id: 25 -->
+    - [x] Create Calendar Page <!-- id: 26 -->
+    - [x] Implement Monthly View <!-- id: 27 -->
+    - [x] Implement Attendance Editing for Past Dates <!-- id: 28 -->
+- [ ] Feature: Smart Timetable Import (OCR) <!-- id: 29 -->
+    - [ ] Install Tesseract.js <!-- id: 30 -->
+    - [ ] Implement Image Upload/Capture <!-- id: 31 -->
+    - [ ] Implement OCR Processing & Parsing Logic <!-- id: 32 -->
+    - [ ] Create Review & Confirm UI <!-- id: 33 -->
+- [ ] Feature: Custom Themes <!-- id: 34 -->
+    - [ ] Create Theme Store/Context <!-- id: 35 -->
+    - [ ] Implement Theme Selector UI <!-- id: 36 -->
+    - [ ] Refactor UI to use Dynamic Colors <!-- id: 37 -->

@@ -19,6 +19,7 @@ import {
 import { isLectureScheduledForDate } from '../utils/dateUtils';
 import { clsx } from 'clsx';
 import { AnimatePresence } from 'framer-motion';
+import { getThemeClasses } from '../utils/themeUtils';
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -27,6 +28,8 @@ export default function Calendar() {
     const lectures = useStore((state) => state.lectures);
     const attendance = useStore((state) => state.attendance);
     const markAttendance = useStore((state) => state.markAttendance);
+    const themeColor = useStore((state) => state.themeColor);
+    const theme = getThemeClasses(themeColor);
 
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
@@ -112,8 +115,8 @@ export default function Calendar() {
                                 className={clsx(
                                     "aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all",
                                     !isCurrentMonth && "opacity-30",
-                                    isSelected ? "bg-blue-600 text-white shadow-md scale-105 z-10" : "hover:bg-gray-50 dark:hover:bg-gray-800",
-                                    isToday(day) && !isSelected && "text-blue-600 font-bold bg-blue-50 dark:bg-blue-900/20"
+                                    isSelected ? `${theme.primary} text-white shadow-md scale-105 z-10` : "hover:bg-gray-50 dark:hover:bg-gray-800",
+                                    isToday(day) && !isSelected && `${theme.text} font-bold ${theme.bgLight} ${theme.bgDark}`
                                 )}
                             >
                                 <span className="text-sm">{format(day, 'd')}</span>
@@ -171,7 +174,7 @@ export default function Calendar() {
                                             </div>
                                             <button
                                                 onClick={() => handleMark(lecture.id, status.status === 'present' ? 'absent' : 'present')}
-                                                className="text-xs text-blue-600 hover:underline"
+                                                className={`text-xs ${theme.text} hover:underline`}
                                             >
                                                 Edit
                                             </button>
