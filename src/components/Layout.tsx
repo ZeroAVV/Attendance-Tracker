@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, BarChart2, Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export default function Layout() {
@@ -31,6 +31,17 @@ export default function Layout() {
                     >
                         <BookOpen size={24} />
                         <span className="text-xs mt-1 font-medium">Lectures</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/calendar"
+                        className={({ isActive }) => clsx(
+                            "flex flex-col items-center justify-center w-full h-full transition-colors",
+                            isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        )}
+                    >
+                        <Calendar size={24} />
+                        <span className="text-xs mt-1 font-medium">Calendar</span>
                     </NavLink>
 
                     <NavLink

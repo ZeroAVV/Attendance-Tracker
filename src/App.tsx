@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Lectures from './pages/Lectures';
+import Calendar from './pages/Calendar';
 import Stats from './pages/Stats';
 import { useEffect } from 'react';
 import { useStore } from './store/useStore';
@@ -18,6 +19,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="lectures" element={<Lectures />} />
+        <Route path="calendar" element={<Calendar />} />
         <Route path="stats" element={<Stats />} />
       </Route>
     </Routes>
