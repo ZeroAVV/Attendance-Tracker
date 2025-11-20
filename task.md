@@ -1,6 +1,6 @@
 # Attendance Tracker App - Task List
 
-- [ ] Project Initialization <!-- id: 0 -->
+- [x] Project Initialization <!-- id: 0 -->
     - [x] Scaffold Vite + React + TypeScript project <!-- id: 1 -->
     - [x] Configure Tailwind CSS <!-- id: 2 -->
     - [x] Install core dependencies (Zustand, React Router, date-fns, lucide-react, idb) <!-- id: 3 -->

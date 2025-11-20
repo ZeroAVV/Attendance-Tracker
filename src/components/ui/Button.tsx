@@ -13,7 +13,7 @@ export function Button({ className, variant = 'primary', size = 'md', ...props }
     const theme = getThemeClasses(themeColor);
 
     const variants = {
-        primary: `${theme.primary} text-white ${theme.primaryHover} shadow-lg shadow-blue-500/20`,
+        primary: `${theme.primary} text-white ${theme.primaryHover} shadow-lg shadow-gray-500/20 dark:shadow-black/30`,
         secondary: "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700",
         danger: "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30",
         ghost: "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400",
@@ -29,7 +29,7 @@ export function Button({ className, variant = 'primary', size = 'md', ...props }
         <motion.button
             whileTap={{ scale: 0.95 }}
             className={clsx(
-                "rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer",
+                "rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer",
                 variants[variant],
                 sizes[size],
                 className

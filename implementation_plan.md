@@ -1,82 +1,58 @@
 # Attendance Tracker App - Implementation Plan
 
 # Goal Description
-Build a Progressive Web App (PWA) for tracking attendance, managing lectures, and viewing statistics. The app will be local-first, using IndexedDB for storage, and built with React, Vite, and Tailwind CSS.
+Complete the "Custom Themes" feature by ensuring the selected theme color is applied consistently across the entire application. Then, begin the "Smart Timetable Import" feature by integrating `tesseract.js` for OCR.
 
 ## User Review Required
-- **Tech Stack**: React, Vite, Tailwind CSS, Zustand, IDB (IndexedDB wrapper).
-- **UI/UX**: Apple-style aesthetics (Glassmorphism, Inter font, smooth transitions). Using `framer-motion` for animations and `lucide-react` for icons.
-- **Mobile Strategy**: Primary target is PWA. Android migration guide provided in `android_migration_guide.md`.
-- **Storage**: Local-first (IndexedDB). Cloud sync is a future feature.
-- **Authentication**: Local "Guest" mode initially as per "Basic Prototype" requirement.
+- **Theme Strategy**: 
+    - "Present"/"Absent" actions will RETAIN their Green/Red semantic colors for clarity.
+    - Primary actions (Add Lecture, Navigation active state) and accents (Focus rings, Selected states) will use the User Selected Theme.
+    - `Button.tsx` shadow and focus rings will be updated to match the theme or be neutral.
 
 ## Proposed Changes
 
-### Project Structure
-#### [NEW] [package.json](file:///d:/Ayan/#Make/Attendance-Tracker/package.json)
-- React, ReactDOM, Vite, TypeScript
-- Tailwind CSS, PostCSS, Autoprefixer
-- Zustand (State Management)
-- React Router DOM (Routing)
-- Lucide React (Icons)
-- Date-fns (Date manipulation)
-- IDB (IndexedDB)
-- Framer Motion (Animations)
-- Class-variance-authority & clsx & tailwind-merge (For robust component styling)
+### Theme Consistency
+#### [MODIFY] [src/components/ui/Button.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/components/ui/Button.tsx)
+- Remove hardcoded `shadow-blue-500/20` and `focus:ring-blue-500/20`.
+- Use `theme.ring` or a neutral shadow/ring.
 
-### Documentation
-#### [NEW] [android_migration_guide.md](file:///C:/Users/Ayan/.gemini/antigravity/brain/276b6321-df45-4d61-b966-275127707121/android_migration_guide.md)
-- Guide for converting the PWA to Android.
+#### [MODIFY] [src/components/LectureForm.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/components/LectureForm.tsx)
+- Replace hardcoded `focus:ring-blue-500` with `theme.ring`.
+- Replace hardcoded `bg-blue-100 text-blue-700` for selected days with `theme.bgLight` and `theme.text`.
 
-### Core Components
-#### [NEW] [src/store/useStore.ts](file:///d:/Ayan/#Make/Attendance-Tracker/src/store/useStore.ts)
-- Zustand store for managing lectures and attendance records.
-- Persistence middleware to save to IndexedDB.
+#### [MODIFY] [src/pages/Lectures.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/pages/Lectures.tsx)
+- Update "Add Lecture" FAB to use `theme.primary`.
 
-#### [NEW] [src/db/db.ts](file:///d:/Ayan/#Make/Attendance-Tracker/src/db/db.ts)
-- IndexedDB initialization and helper functions.
+#### [MODIFY] [src/pages/Dashboard.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/pages/Dashboard.tsx)
+- Update "Today" header or empty state to use `theme.text` or `theme.bgLight` for better branding.
+- Ensure "Present"/"Absent" buttons remain Green/Red but check if any other elements need theming.
 
-### UI Components
-#### [NEW] [src/components/ui/Card.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/components/ui/Card.tsx)
-- Reusable card component with iOS-style shadows and rounded corners.
+### Smart Timetable Import (OCR)
+#### [NEW] [src/utils/ocrUtils.ts](file:///d:/Ayan/Make/Attendance-Tracker-1/src/utils/ocrUtils.ts)
+- Implement `processImage(file: File): Promise<string>` using `tesseract.js`.
+- Implement `parseTimetable(text: string): Lecture[]` (heuristic parsing).
 
-#### [NEW] [src/components/ui/Button.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/components/ui/Button.tsx)
-- Reusable button component with variants.
+#### [NEW] [src/components/OCRUploader.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/components/OCRUploader.tsx)
+- UI for uploading/capturing image.
+- Display loading state while processing.
+- Show parsed results for confirmation.
 
-#### [NEW] [src/components/Layout.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/components/Layout.tsx)
-- Main application shell with navigation (Bottom tab bar for mobile feel).
-
-#### [NEW] [src/pages/Dashboard.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/pages/Dashboard.tsx)
-- "Today's Lectures" view.
-- Quick attendance marking.
-
-#### [NEW] [src/pages/Lectures.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/pages/Lectures.tsx)
-- List of all lectures.
-- Add/Edit lecture functionality.
-
-#### [NEW] [src/pages/Stats.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/pages/Stats.tsx)
-- Attendance statistics and graphs.
-
-#### [NEW] [src/pages/Calendar.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/pages/Calendar.tsx)
-- Monthly calendar view.
-- Visual indicators for attendance status (dots/colors).
-- Tap to view/edit attendance for that date.
-
-#### [NEW] [src/pages/Settings.tsx](file:///d:/Ayan/#Make/Attendance-Tracker/src/pages/Settings.tsx)
-- Theme selector (Primary Color).
-- Data management options.
-
-#### [NEW] [src/utils/ocrUtils.ts](file:///d:/Ayan/#Make/Attendance-Tracker/src/utils/ocrUtils.ts)
-- `tesseract.js` integration.
-- Heuristic parsing logic to extract lecture details from raw text.
+#### [MODIFY] [src/pages/Lectures.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/pages/Lectures.tsx)
+- Add "Import Timetable" button (next to "Add Lecture").
+- Integrate `OCRUploader` modal.
 
 ## Verification Plan
 ### Automated Tests
-- `npm run build` to verify build success.
-- `npm run lint` to check for code quality issues.
+- `npm run build` to ensure no type errors.
 
 ### Manual Verification
-- **Add Lecture**: Verify a user can add a lecture with all fields.
-- **Mark Attendance**: Verify attendance can be marked for a specific date.
-- **Stats**: Verify statistics update correctly after marking attendance.
-- **Persistence**: Reload page and verify data persists.
+1.  **Theme Check**:
+    -   Go to Settings, change theme to "Purple".
+    -   Verify "Add Lecture" button in Lectures page is Purple.
+    -   Verify Focus rings in Lecture Form are Purple.
+    -   Verify Selected days in Lecture Form are Purple.
+    -   Verify Navigation active state is Purple.
+2.  **OCR Check**:
+    -   Click "Import Timetable".
+    -   Upload a sample timetable image.
+    -   Verify text is extracted and parsed (check console logs or UI).
