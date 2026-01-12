@@ -3,5 +3,11 @@
   "compatibility_date": "2026-01-12",
   "assets": {
     "directory": "./dist"
+  },
+  "vars": {
+    "VITE_CLERK_PUBLISHABLE_KEY": "pk_test_Z2xhZC1zaGFkLTgwLmNsZXJrLmFjY291bnRzLmRldiQ",
+    "VITE_SUPABASE_URL": "https://qonnlnajntxnobhnmktq.supabase.co",
+    "VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY": "sb_publishable_51THmxjLfVXRiaUH-WnzLg_YZmYiU8a",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvbm5sbmFqbnR4bm9iaG5ta3RxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzMzNzYsImV4cCI6MjA4MzgwOTM3Nn0.QiBztYi9v9yeDg53RSCWCZmcvfVR3LrNympJLWipMUI"
   }
 }
