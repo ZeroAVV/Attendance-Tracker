@@ -3,6 +3,8 @@ import { useStore } from '../store/useStore';
 import { Button } from './ui/Button';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { clsx } from 'clsx';
+import { getThemeClasses } from '../utils/themeUtils';
 
 interface LectureFormProps {
     onClose: () => void;
@@ -10,6 +12,8 @@ interface LectureFormProps {
 
 export default function LectureForm({ onClose }: LectureFormProps) {
     const addLecture = useStore((state) => state.addLecture);
+    const themeColor = useStore((state) => state.themeColor);
+    const theme = getThemeClasses(themeColor);
     const [formData, setFormData] = useState({
         name: '',
         courseCode: '',
@@ -29,12 +33,12 @@ export default function LectureForm({ onClose }: LectureFormProps) {
             name: formData.name,
             courseCode: formData.courseCode,
             professor: formData.professor,
-            schedule: {
+            schedules: [{
                 days: formData.days,
                 startTime: formData.startTime,
                 endTime: formData.endTime,
                 location: formData.location,
-            },
+            }],
             targetPercentage: formData.targetPercentage,
         });
         onClose();
@@ -82,7 +86,10 @@ export default function LectureForm({ onClose }: LectureFormProps) {
                             type="text"
                             value={formData.courseCode}
                             onChange={e => setFormData({ ...formData, courseCode: e.target.value })}
-                            className="w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className={clsx(
+                                "w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 outline-none",
+                                theme.ring
+                            )}
                             placeholder="MAT101"
                         />
                     </div>
@@ -92,7 +99,10 @@ export default function LectureForm({ onClose }: LectureFormProps) {
                             type="number"
                             value={formData.targetPercentage}
                             onChange={e => setFormData({ ...formData, targetPercentage: Number(e.target.value) })}
-                            className="w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className={clsx(
+                                "w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 outline-none",
+                                theme.ring
+                            )}
                         />
                     </div>
                 </div>
@@ -105,10 +115,12 @@ export default function LectureForm({ onClose }: LectureFormProps) {
                                 key={day}
                                 type="button"
                                 onClick={() => toggleDay(day)}
-                                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${formData.days.includes(day)
-                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                        : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                                    }`}
+                                className={clsx(
+                                    "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                                    formData.days.includes(day)
+                                        ? `${theme.bgLight} ${theme.text} ${theme.bgDark}`
+                                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                                )}
                             >
                                 {day}
                             </button>
@@ -119,13 +131,19 @@ export default function LectureForm({ onClose }: LectureFormProps) {
                             type="time"
                             value={formData.startTime}
                             onChange={e => setFormData({ ...formData, startTime: e.target.value })}
-                            className="w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className={clsx(
+                                "w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 outline-none",
+                                theme.ring
+                            )}
                         />
                         <input
                             type="time"
                             value={formData.endTime}
                             onChange={e => setFormData({ ...formData, endTime: e.target.value })}
-                            className="w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className={clsx(
+                                "w-full p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 outline-none",
+                                theme.ring
+                            )}
                         />
                     </div>
                 </div>

@@ -53,12 +53,12 @@ export default function Dashboard() {
                                     <div className="text-right">
                                         <div className="flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-300">
                                             <Clock size={14} />
-                                            {lecture.schedule.startTime}
+                                            {lecture.schedules?.[0]?.startTime || 'N/A'}
                                         </div>
-                                        {lecture.schedule.location && (
+                                        {lecture.schedules?.[0]?.location && (
                                             <div className="flex items-center gap-1 text-xs text-gray-400 mt-1 justify-end">
                                                 <MapPin size={12} />
-                                                {lecture.schedule.location}
+                                                {lecture.schedules[0].location}
                                             </div>
                                         )}
                                     </div>
@@ -66,8 +66,8 @@ export default function Dashboard() {
 
                                 {status ? (
                                     <div className={`p-3 rounded-xl flex items-center justify-center gap-2 font-bold ${status.status === 'present'
-                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                         }`}>
                                         {status.status === 'present' ? <Check size={20} /> : <X size={20} />}
                                         {status.status === 'present' ? 'Present' : 'Absent'}

@@ -19,6 +19,7 @@ import {
 import { isLectureScheduledForDate } from '../utils/dateUtils';
 import { clsx } from 'clsx';
 import { AnimatePresence } from 'framer-motion';
+import { getThemeClasses } from '../utils/themeUtils';
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -27,6 +28,8 @@ export default function Calendar() {
     const lectures = useStore((state) => state.lectures);
     const attendance = useStore((state) => state.attendance);
     const markAttendance = useStore((state) => state.markAttendance);
+    const themeColor = useStore((state) => state.themeColor);
+    const theme = getThemeClasses(themeColor);
 
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
@@ -45,11 +48,12 @@ export default function Calendar() {
         isLectureScheduledForDate(lecture, selectedDate)
     );
 
+
     const getAttendanceStatus = (lectureId: string, dateStr: string) => {
         return attendance.find(a => a.lectureId === lectureId && a.date === dateStr);
     };
 
-    const handleMark = async (lectureId: string, status: 'present' | 'absent') => {
+    const handleMark = async (lectureId: string, status: 'present' | 'absent' | 'excused') => {
         await markAttendance({
             lectureId,
             date: selectedDateStr,
@@ -112,8 +116,8 @@ export default function Calendar() {
                                 className={clsx(
                                     "aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all",
                                     !isCurrentMonth && "opacity-30",
-                                    isSelected ? "bg-blue-600 text-white shadow-md scale-105 z-10" : "hover:bg-gray-50 dark:hover:bg-gray-800",
-                                    isToday(day) && !isSelected && "text-blue-600 font-bold bg-blue-50 dark:bg-blue-900/20"
+                                    isSelected ? `${theme.primary} text-white shadow-md scale-105 z-10` : "hover:bg-gray-50 dark:hover:bg-gray-800",
+                                    isToday(day) && !isSelected && `${theme.text} font-bold ${theme.bgLight} ${theme.bgDark}`
                                 )}
                             >
                                 <span className="text-sm">{format(day, 'd')}</span>
@@ -158,23 +162,56 @@ export default function Calendar() {
                                 <Card key={lecture.id} className="flex justify-between items-center">
                                     <div>
                                         <h3 className="font-bold">{lecture.name}</h3>
-                                        <p className="text-sm text-gray-500">{lecture.schedule.startTime} - {lecture.schedule.endTime}</p>
+                                        <p className="text-sm text-gray-500">{lecture.schedules?.[0]?.startTime || 'N/A'} - {lecture.schedules?.[0]?.endTime || 'N/A'}</p>
                                     </div>
 
                                     {status ? (
                                         <div className="flex items-center gap-3">
                                             <div className={`px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1 ${status.status === 'present'
                                                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                : status.status === 'excused'
+                                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                                 }`}>
-                                                {status.status === 'present' ? 'Present' : 'Absent'}
+                                                {status.status === 'present' ? 'Present' : status.status === 'excused' ? 'Excused' : 'Absent'}
                                             </div>
-                                            <button
-                                                onClick={() => handleMark(lecture.id, status.status === 'present' ? 'absent' : 'present')}
-                                                className="text-xs text-blue-600 hover:underline"
-                                            >
-                                                Edit
-                                            </button>
+                                            <div className="relative group">
+                                                <button
+                                                    className={`text-xs ${theme.text} hover:underline`}
+                                                >
+                                                    Edit ▼
+                                                </button>
+                                                <div className="absolute right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 min-w-[120px]">
+                                                    <button
+                                                        onClick={() => handleMark(lecture.id, 'present')}
+                                                        className="w-full text-left px-4 py-2 text-sm hover:bg-green-50 dark:hover:bg-green-900/20 text-green-600 dark:text-green-400 font-medium"
+                                                    >
+                                                        Present
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleMark(lecture.id, 'absent')}
+                                                        className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 font-medium"
+                                                    >
+                                                        Absent
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleMark(lecture.id, 'excused')}
+                                                        className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium"
+                                                    >
+                                                        Excused
+                                                    </button>
+                                                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                                    <button
+                                                        onClick={async () => {
+                                                            await (await import('../db/db')).dbPromise.then(db => db.delete('attendance', status.id));
+                                                            await useStore.getState().fetchData();
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 font-medium"
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="flex gap-2">
@@ -185,6 +222,14 @@ export default function Calendar() {
                                                 onClick={() => handleMark(lecture.id, 'absent')}
                                             >
                                                 <X size={16} />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                className="!bg-blue-50 !text-blue-600 hover:!bg-blue-100"
+                                                onClick={() => handleMark(lecture.id, 'excused')}
+                                            >
+                                                E
                                             </Button>
                                             <Button
                                                 size="sm"
