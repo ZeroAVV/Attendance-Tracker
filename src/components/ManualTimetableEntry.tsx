@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Trash2, Calendar } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -85,7 +85,7 @@ export default function ManualTimetableEntry({ onClose }: ManualEntryProps) {
         });
 
         // Merge with existing lectures
-        const lecturesToAdd: Omit<Lecture, 'id'>[] = [];
+        const lecturesToAdd: Omit<Lecture, 'id' | 'userId'>[] = [];
         for (const [subjectName, newSchedules] of Object.entries(subjectMap)) {
             const existingLecture = lectures.find(l => l.name.trim().toLowerCase() === subjectName);
 
