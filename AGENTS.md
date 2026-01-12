@@ -114,3 +114,11 @@ import { type Lecture } from '../db/db';
 - Icons from lucide-react, use appropriate sizes
 - Text colors: gray-500 for secondary, gray-900 primary
 - Status colors: green for present/success, red for absent/error
+
+### Authentication (Clerk)
+- Package: `@clerk/clerk-react` for Vite/React projects
+- Environment variable: `VITE_CLERK_PUBLISHABLE_KEY` in `.env`
+- App wrapped with `<ClerkProvider>` in `main.tsx`
+- Use Clerk components: `<SignedIn>`, `<SignedOut>`, `<SignInButton>`, `<SignUpButton>`, `<UserButton>`
+- Import hooks from `@clerk/clerk-react`: `useAuth`, `useUser`
+- Never use real API keys in code - only placeholders like `YOUR_PUBLISHABLE_KEY`
