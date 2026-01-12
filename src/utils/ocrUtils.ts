@@ -8,13 +8,13 @@ export async function processImage(file: File): Promise<string> {
     return ret.data.text;
 }
 
-export function parseTimetable(text: string): Omit<Lecture, 'id'>[] {
+export function parseTimetable(text: string): Omit<Lecture, 'id' | 'userId'>[] {
     console.log("=== OCR RAW TEXT ===");
     console.log(text);
     console.log("===================");
 
     const lines = text.split('\n').filter(line => line.trim().length > 0);
-    const lectures: Omit<Lecture, 'id'>[] = [];
+    const lectures: Omit<Lecture, 'id' | 'userId'>[] = [];
 
     const dayMap: Record<string, string> = {
         'monday': 'Mon',

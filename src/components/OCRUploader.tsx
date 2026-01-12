@@ -16,7 +16,7 @@ export default function OCRUploader({ onClose }: OCRUploaderProps) {
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [parsedLectures, setParsedLectures] = useState<Omit<Lecture, 'id'>[]>([]);
+    const [parsedLectures, setParsedLectures] = useState<Omit<Lecture, 'id' | 'userId'>[]>([]);
     const [step, setStep] = useState<'upload' | 'review'>('upload');
     const fileInputRef = useRef<HTMLInputElement>(null);
 

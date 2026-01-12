@@ -2,6 +2,7 @@ import { openDB, type DBSchema } from 'idb';
 
 export interface Lecture {
     id: string;
+    userId: string;
     name: string;
     courseCode?: string;
     professor?: string;
@@ -20,6 +21,7 @@ export interface Lecture {
 
 export interface AttendanceRecord {
     id: string;
+    userId: string;
     lectureId: string;
     date: string; // ISO date string YYYY-MM-DD
     status: 'present' | 'absent' | 'late' | 'excused';
@@ -31,17 +33,17 @@ interface AttendanceTrackerDB extends DBSchema {
     lectures: {
         key: string;
         value: Lecture;
-        indexes: { 'by-name': string };
+        indexes: { 'by-name': string; 'by-userId': string; 'by-userId-name': [string, string] };
     };
     attendance: {
         key: string;
         value: AttendanceRecord;
-        indexes: { 'by-lecture': string; 'by-date': string; 'by-lecture-date': [string, string] };
+        indexes: { 'by-lecture': string; 'by-date': string; 'by-lecture-date': [string, string]; 'by-userId': string; 'by-userId-lecture': [string, string]; 'by-userId-date': [string, string]; 'by-userId-lecture-date': [string, string, string] };
     };
 }
 
 const DB_NAME = 'attendance-tracker-db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export const initDB = async () => {
     return openDB<AttendanceTrackerDB>(DB_NAME, DB_VERSION, {
@@ -75,6 +77,43 @@ export const initDB = async () => {
                     }
                 }
 
+                await tx.done;
+            }
+
+            // Migrate from version 2 to 3: Add user isolation and wipe data
+            if (oldVersion < 3) {
+                // Add new indexes to lectures store
+                if (db.objectStoreNames.contains('lectures')) {
+                    const lectureStore = db.transaction('lectures', 'versionchange').objectStore('lectures');
+                    if (!lectureStore.indexNames.contains('by-userId')) {
+                        lectureStore.createIndex('by-userId', 'userId');
+                    }
+                    if (!lectureStore.indexNames.contains('by-userId-name')) {
+                        lectureStore.createIndex('by-userId-name', ['userId', 'name']);
+                    }
+                }
+
+                // Add new indexes to attendance store
+                if (db.objectStoreNames.contains('attendance')) {
+                    const attendanceStore = db.transaction('attendance', 'versionchange').objectStore('attendance');
+                    if (!attendanceStore.indexNames.contains('by-userId')) {
+                        attendanceStore.createIndex('by-userId', 'userId');
+                    }
+                    if (!attendanceStore.indexNames.contains('by-userId-lecture')) {
+                        attendanceStore.createIndex('by-userId-lecture', ['userId', 'lectureId']);
+                    }
+                    if (!attendanceStore.indexNames.contains('by-userId-date')) {
+                        attendanceStore.createIndex('by-userId-date', ['userId', 'date']);
+                    }
+                    if (!attendanceStore.indexNames.contains('by-userId-lecture-date')) {
+                        attendanceStore.createIndex('by-userId-lecture-date', ['userId', 'lectureId', 'date']);
+                    }
+                }
+
+                // Clear all existing data for clean slate with user isolation
+                const tx = db.transaction(['lectures', 'attendance'], 'readwrite');
+                await tx.objectStore('lectures').clear();
+                await tx.objectStore('attendance').clear();
                 await tx.done;
             }
         },
