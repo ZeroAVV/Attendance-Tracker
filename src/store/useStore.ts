@@ -4,23 +4,31 @@ import { dbPromise, type Lecture, type AttendanceRecord } from '../db/db';
 interface State {
     lectures: Lecture[];
     attendance: AttendanceRecord[];
+    themeColor: 'blue' | 'purple' | 'green' | 'red' | 'orange';
     isLoading: boolean;
     error: string | null;
 
     // Actions
+    setThemeColor: (color: 'blue' | 'purple' | 'green' | 'red' | 'orange') => void;
     fetchData: () => Promise<void>;
     addLecture: (lecture: Omit<Lecture, 'id'>) => Promise<void>;
     updateLecture: (id: string, updates: Partial<Lecture>) => Promise<void>;
     deleteLecture: (id: string) => Promise<void>;
     markAttendance: (record: Omit<AttendanceRecord, 'id' | 'timestamp'>) => Promise<void>;
     getAttendanceForLecture: (lectureId: string) => AttendanceRecord[];
+    clearAllData: () => Promise<void>;
+    clearAllLectures: () => Promise<void>;
+    clearAllAttendance: () => Promise<void>;
 }
 
 export const useStore = create<State>((set, get) => ({
     lectures: [],
     attendance: [],
+    themeColor: 'blue',
     isLoading: true,
     error: null,
+
+    setThemeColor: (color) => set({ themeColor: color }),
 
     fetchData: async () => {
         try {
@@ -76,15 +84,56 @@ export const useStore = create<State>((set, get) => ({
     },
 
     markAttendance: async (recordData) => {
-        const id = crypto.randomUUID();
-        const timestamp = Date.now();
-        const newRecord: AttendanceRecord = { ...recordData, id, timestamp };
         const db = await dbPromise;
-        await db.put('attendance', newRecord);
-        set((state) => ({ attendance: [...state.attendance, newRecord] }));
+
+        // Check if attendance record already exists for this lecture and date
+        const tx = db.transaction('attendance', 'readwrite');
+        const index = tx.store.index('by-lecture-date');
+        const existingRecord = await index.get([recordData.lectureId, recordData.date]);
+
+        if (existingRecord) {
+            // Update existing record
+            const updatedRecord: AttendanceRecord = {
+                ...existingRecord,
+                status: recordData.status,
+                timestamp: Date.now()
+            };
+            await db.put('attendance', updatedRecord);
+            set((state) => ({
+                attendance: state.attendance.map((a) =>
+                    a.id === existingRecord.id ? updatedRecord : a
+                )
+            }));
+        } else {
+            // Create new record
+            const id = crypto.randomUUID();
+            const timestamp = Date.now();
+            const newRecord: AttendanceRecord = { ...recordData, id, timestamp };
+            await db.put('attendance', newRecord);
+            set((state) => ({ attendance: [...state.attendance, newRecord] }));
+        }
     },
 
     getAttendanceForLecture: (lectureId) => {
         return get().attendance.filter((a) => a.lectureId === lectureId);
+    },
+
+    clearAllData: async () => {
+        const db = await dbPromise;
+        await db.clear('lectures');
+        await db.clear('attendance');
+        set({ lectures: [], attendance: [] });
+    },
+
+    clearAllLectures: async () => {
+        const db = await dbPromise;
+        await db.clear('lectures');
+        set({ lectures: [] });
+    },
+
+    clearAllAttendance: async () => {
+        const db = await dbPromise;
+        await db.clear('attendance');
+        set({ attendance: [] });
     },
 }));

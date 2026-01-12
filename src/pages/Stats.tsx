@@ -2,10 +2,14 @@ import { useStore } from '../store/useStore';
 import { Card } from '../components/ui/Card';
 import { BarChart2, TrendingUp, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { clsx } from 'clsx';
+import { getThemeClasses } from '../utils/themeUtils';
 
 export default function Stats() {
     const lectures = useStore((state) => state.lectures);
     const attendance = useStore((state) => state.attendance);
+    const themeColor = useStore((state) => state.themeColor);
+    const theme = getThemeClasses(themeColor);
 
     const calculateStats = (lectureId: string) => {
         const lectureAttendance = attendance.filter(a => a.lectureId === lectureId);
@@ -38,7 +42,7 @@ export default function Stats() {
             <h1 className="text-3xl font-bold mb-6">Statistics</h1>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
-                <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-none">
+                <Card className={clsx("text-white border-none", theme.primary)}>
                     <div className="flex items-center gap-2 mb-2 opacity-80">
                         <TrendingUp size={18} />
                         <span className="text-sm font-medium">Overall</span>
@@ -46,7 +50,7 @@ export default function Stats() {
                     <div className="text-4xl font-bold">{overallPercentage}%</div>
                     <div className="text-sm opacity-80 mt-1">Attendance Rate</div>
                 </Card>
-                <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-none">
+                <Card className="bg-gray-800 text-white border-none">
                     <div className="flex items-center gap-2 mb-2 opacity-80">
                         <Award size={18} />
                         <span className="text-sm font-medium">Streak</span>
@@ -56,7 +60,7 @@ export default function Stats() {
                 </Card>
             </div>
 
-            <h2 className="text-xl font-bold mb-4">By Lecture</h2>
+            <h2 className="text-xl font-bold mb-4">Course Breakdown</h2>
             <div className="space-y-4">
                 {lectures.map((lecture) => {
                     const { percentage, present, total } = calculateStats(lecture.id);
@@ -67,10 +71,15 @@ export default function Stats() {
                         <Card key={lecture.id}>
                             <div className="flex justify-between items-end mb-2">
                                 <div>
-                                    <h3 className="font-bold">{lecture.name}</h3>
-                                    <p className="text-sm text-gray-500">{present}/{total} sessions</p>
+                                    <h3 className="font-bold text-lg">{lecture.name}</h3>
+                                    <p className="text-sm text-gray-500">
+                                        {present}/{total} sessions
+                                    </p>
                                 </div>
-                                <div className={`text-xl font-bold ${isLow ? 'text-red-500' : 'text-green-500'}`}>
+                                <div className={clsx(
+                                    "text-xl font-bold",
+                                    isLow ? "text-red-500" : "text-green-500"
+                                )}>
                                     {percentage}%
                                 </div>
                             </div>
@@ -80,7 +89,10 @@ export default function Stats() {
                                     initial={{ width: 0 }}
                                     animate={{ width: `${percentage}%` }}
                                     transition={{ duration: 1, ease: "easeOut" }}
-                                    className={`h-2.5 rounded-full ${isLow ? 'bg-red-500' : 'bg-green-500'}`}
+                                    className={clsx(
+                                        "h-2.5 rounded-full",
+                                        isLow ? "bg-red-500" : theme.primary
+                                    )}
                                 />
                             </div>
                             <div className="flex justify-between mt-1">
