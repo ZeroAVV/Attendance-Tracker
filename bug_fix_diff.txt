@@ -1,0 +1,1477 @@
+diff --git a/AGENTS.md b/AGENTS.md
+deleted file mode 100644
+index 446520d..0000000
+--- a/AGENTS.md
++++ /dev/null
+@@ -1,124 +0,0 @@
+-# Agents Guide - Attendance Tracker
+-
+-## Build & Development Commands
+-
+-```bash
+-# Development
+-npm run dev                 # Start Vite dev server with HMR
+-
+-# Build
+-npm run build              # TypeScript check + Vite production build
+-npm run preview            # Preview production build locally
+-
+-# Linting
+-npm run lint               # Run ESLint on all files
+-```
+-
+-**Note:** No test framework is currently configured. To add testing, install Vitest or Jest and configure accordingly.
+-
+-## Code Style Guidelines
+-
+-### File Organization
+-- `src/components/` - Reusable feature components (default exports)
+-- `src/components/ui/` - UI primitives with variant support (named exports: Button, Card)
+-- `src/pages/` - Route-level page components (default exports)
+-- `src/store/` - Zustand global state management
+-- `src/utils/` - Pure utility functions (no side effects)
+-- `src/db/` - IndexedDB abstraction layer with type definitions
+-
+-### Component Patterns
+-- Functional components only, use hooks for state/side effects
+-- Props interfaces defined above the component
+-- UI components: named exports extending HTMLMotionProps
+-- Feature components: default exports, inline interface props
+-- Motion components: standard Framer Motion patterns (initial/animate/exit)
+-- Default prop values in function signature: `variant = 'primary'`
+-
+-### State Management (Zustand)
+-- Store located in `src/store/useStore.ts`
+-- Selector pattern: `useStore((state) => state.lectures)`
+-- Async actions: wrap in try/catch, set error and isLoading state
+-- Sync and async actions coexist in the same store interface
+-- Use `get()` to access state within async actions
+-- Immutable state updates: `set((state) => ({ ...state, ...updates }))`
+-
+-### Styling (Tailwind CSS v4)
+-- Dark mode support via `dark:` classes required for all user-facing UI
+-- Use `clsx` for conditional class merging
+-- Button variants: primary (blue-600), secondary (gray), danger (red-50/red-600), ghost
+-- Button sizes: sm (px-3 py-1.5), md (px-4 py-2), lg (px-6 py-3)
+-- Roundness: buttons `rounded-xl`, cards `rounded-2xl`, inputs `rounded-lg`
+-- Focus states: `focus:ring-2 focus:ring-blue-500/20`
+-- Gradients: use `bg-gradient-to-br from-X to-Y` for stat cards
+-
+-### TypeScript Configuration
+-- Strict mode enabled with no unused locals/parameters
+-- Define interfaces before components, use `type` for unions
+-- Create operations: `Omit<Type, 'id'>` to exclude auto-generated IDs
+-- Update operations: `Partial<Type>` for partial updates
+-- Inline type annotations where inference isn't obvious
+-- All async functions return Promise, explicitly typed
+-
+-### Import Organization
+-```typescript
+-// 1. External libraries (sorted alphabetically)
+-import { useState, useEffect } from 'react';
+-import { motion, type HTMLMotionProps } from 'framer-motion';
+-import { clsx } from 'clsx';
+-
+-// 2. Internal modules (sorted alphabetically)
+-import { useStore } from '../store/useStore';
+-import { Button } from './ui/Button';
+-import { type Lecture } from '../db/db';
+-```
+-
+-### Naming Conventions
+-- Components: PascalCase (LectureForm, Dashboard)
+-- Variables/Functions: camelCase (fetchData, markAttendance)
+-- Interfaces/Types: PascalCase (Lecture, AttendanceRecord)
+-- Constants: UPPER_SNAKE_CASE (DB_NAME, DB_VERSION)
+-- Files: PascalCase for components, lowercase for utilities
+-- State selectors: match property name (lectures → lectures, fetchData)
+-
+-### Error Handling
+-- Wrap all async operations in try/catch
+-- Store errors in state with user-friendly messages
+-- Console.error for debugging only, not in production
+-- Loading states for all async operations
+-- Render error states gracefully with fallback UI
+-
+-### IndexedDB Patterns
+-- Always use `idb` library, never raw IndexedDB API
+-- All database logic in `src/db/db.ts`
+-- Export TypeScript types: Lecture, AttendanceRecord
+-- Use `crypto.randomUUID()` for primary keys
+-- Cascading deletes: use transactions and indexes for related records
+-- Use `dbPromise` singleton, never recreate connections
+-
+-### React Router
+-- BrowserRouter in `main.tsx`
+-- Route structure: nested inside Layout component
+-- Layout contains bottom tab navigation with NavLink
+-- Active states use `isActive` callback with conditional classes
+-- Use Outlet in Layout for nested routes
+-
+-### Utility Functions
+-- Pure functions only, no side effects
+-- Date utilities use `date-fns` library
+-- Export named functions, never default
+-- Clear function names: `isLectureScheduledForDate`, `getTodayLectures`
+-
+-### Accessibility & UI
+-- All interactive elements have focus states
+-- Use semantic HTML (button, nav, header, main)
+-- Icons from lucide-react, use appropriate sizes
+-- Text colors: gray-500 for secondary, gray-900 primary
+-- Status colors: green for present/success, red for absent/error
+-
+-### Authentication (Clerk)
+-- Package: `@clerk/clerk-react` for Vite/React projects
+-- Environment variable: `VITE_CLERK_PUBLISHABLE_KEY` in `.env`
+-- App wrapped with `<ClerkProvider>` in `main.tsx`
+-- Use Clerk components: `<SignedIn>`, `<SignedOut>`, `<SignInButton>`, `<SignUpButton>`, `<UserButton>`
+-- Import hooks from `@clerk/clerk-react`: `useAuth`, `useUser`
+-- Never use real API keys in code - only placeholders like `YOUR_PUBLISHABLE_KEY`
+diff --git a/PROMPT_FOR_NEXT_AGENT.md b/PROMPT_FOR_NEXT_AGENT.md
+deleted file mode 100644
+index 1c8493b..0000000
+--- a/PROMPT_FOR_NEXT_AGENT.md
++++ /dev/null
+@@ -1,27 +0,0 @@
+-# Initiation Prompt for Next Agent
+-
+-**Copy and paste the following prompt into your next chat session:**
+-
+----
+-
+-I am continuing development on the **Attendance Tracker PWA**. I have just moved the project to this new directory to resolve build issues caused by special characters in the previous path.
+-
+-**Context Restoration:**
+-Please start by reading the following files located in the root of this project to understand the current state and history:
+-1.  `task.md`: The master checklist of features and progress.
+-2.  `implementation_plan.md`: The technical design and recent changes.
+-3.  `walkthrough.md`: A summary of implemented features and how to run the app.
+-4.  `android_migration_guide.md`: Our strategy for future mobile deployment.
+-
+-**Current Status:**
+-- **Completed**: Lecture CRUD, Dashboard (Today's view), Calendar View (Monthly + Editing), Statistics (Visual graphs), and Basic Theme Infrastructure (`useStore`, `themeUtils`).
+-- **In Progress**: 
+-    - **Custom Themes**: We have a `Settings` page and have started applying themes to `Calendar` and `Stats`, but need to ensure it's consistently applied across the entire app (e.g., `Dashboard`, `LectureList`).
+-    - **Build Fix**: The previous build failed due to a `#` in the file path. Now that the folder is renamed/moved, `npm run build` should pass.
+-
+-**Immediate Next Steps:**
+-1.  **Verify Build**: Run `npm run build` to confirm the path issue is resolved.
+-2.  **Finish Themes**: Ensure the selected theme color applies to ALL interactive elements (Dashboard cards, Lecture list icons, etc.).
+-3.  **Start OCR Feature**: Begin the "Smart Timetable Import" feature using `tesseract.js` as outlined in the `implementation_plan.md`.
+-
+-Let's get to work!
+diff --git a/README.md b/README.md
+index d2e7761..0eb7839 100644
+--- a/README.md
++++ b/README.md
+@@ -1,73 +1,161 @@
+-# React + TypeScript + Vite
++# Attendance Tracker
+ 
+-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
++A modern attendance tracking application built with React, TypeScript, and Vite, featuring cloud storage via Supabase and authentication via Clerk.
+ 
+-Currently, two official plugins are available:
++## ✨ Features
+ 
+-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
++- 📅 **Lecture Management** - Create and manage course schedules
++- ✅ **Attendance Tracking** - Mark attendance as present, absent, late, or excused
++- 📊 **Statistics Dashboard** - Visualize attendance trends
++- 📱 **Mobile Ready** - Responsive design with Capacitor support
++- 🔒 **Secure** - Row-level security with Clerk authentication
++- ☁️ **Cloud Sync** - Data stored in Supabase PostgreSQL
++- 🖼️ **OCR Support** - Import timetables from images (Tesseract.js)
+ 
+-## React Compiler
++## 🚀 Quick Start
+ 
+-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
++### Prerequisites
++- Node.js 19+
++- Clerk account ([sign up free](https://clerk.com))
++- Supabase account ([sign up free](https://supabase.com))
+ 
+-## Expanding the ESLint configuration
++### 1. Install Dependencies
++```bash
++npm install
++```
++
++### 2. Setup Supabase Database
++1. Create a project at [supabase.com](https://supabase.com)
++2. Open SQL Editor and run the schema from `docs/supabase-schema.sql`
++3. Configure Clerk integration in Supabase Dashboard
++4. Copy your Supabase URL and Anon Key from Settings → API
++
++### 3. Setup Clerk
++1. Go to [Clerk Dashboard](https://dashboard.clerk.com)
++2. Navigate to Configure → Supabase
++3. Click "Activate Supabase integration"
++4. Copy your Publishable Key from Keys page
++
++### 4. Configure Environment Variables
++Create a `.env` file in the project root:
++```bash
++VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxx
++VITE_SUPABASE_URL=https://xxxxx.supabase.co
++VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
++```
++
++### 5. Run Development Server
++```bash
++npm run dev
++```
++Open [http://localhost:5173](http://localhost:5173)
+ 
+-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
++## 📚 Documentation
+ 
+-```js
+-export default defineConfig([
+-  globalIgnores(['dist']),
+-  {
+-    files: ['**/*.{ts,tsx}'],
+-    extends: [
+-      // Other configs...
++All guides and documentation are in the `docs/` folder:
+ 
+-      // Remove tseslint.configs.recommended and replace with this
+-      tseslint.configs.recommendedTypeChecked,
+-      // Alternatively, use this for stricter rules
+-      tseslint.configs.strictTypeChecked,
+-      // Optionally, add this for stylistic rules
+-      tseslint.configs.stylisticTypeChecked,
++- **[Quick Start Guide](docs/QUICK_START.md)** - Get started in 5 minutes
++- **[Migration Checklist](docs/MIGRATION_CHECKLIST.md)** - Complete setup checklist
++- **[Cloudflare Deployment](docs/CLOUDFLARE_DEPLOYMENT.md)** - Deploy to production
++- **[Android Migration](docs/android_migration_guide.md)** - Build mobile app
++- **[Documentation Index](docs/README.md)** - All documentation files
+ 
+-      // Other configs...
+-    ],
+-    languageOptions: {
+-      parserOptions: {
+-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+-        tsconfigRootDir: import.meta.dirname,
+-      },
+-      // other options...
+-    },
+-  },
+-])
++## 🛠️ Available Scripts
++
++```bash
++npm run dev      # Start development server
++npm run build    # Build for production
++npm run lint     # Run ESLint
++npm run preview   # Preview production build
+ ```
+ 
+-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+-
+-```js
+-// eslint.config.js
+-import reactX from 'eslint-plugin-react-x'
+-import reactDom from 'eslint-plugin-react-dom'
+-
+-export default defineConfig([
+-  globalIgnores(['dist']),
+-  {
+-    files: ['**/*.{ts,tsx}'],
+-    extends: [
+-      // Other configs...
+-      // Enable lint rules for React
+-      reactX.configs['recommended-typescript'],
+-      // Enable lint rules for React DOM
+-      reactDom.configs.recommended,
+-    ],
+-    languageOptions: {
+-      parserOptions: {
+-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+-        tsconfigRootDir: import.meta.dirname,
+-      },
+-      // other options...
+-    },
+-  },
+-])
++## 🏗️ Tech Stack
++
++- **Framework**: React 19 + TypeScript
++- **Build Tool**: Vite 7
++- **Authentication**: Clerk
++- **Database**: Supabase PostgreSQL
++- **State Management**: Zustand
++- **Styling**: Tailwind CSS 4
++- **OCR**: Tesseract.js
++- **Mobile**: Capacitor
++
++## 📂 Project Structure
++
+ ```
++attendance-tracker/
++├── docs/                    # All documentation and guides
++│   ├── QUICK_START.md         # 5-minute setup guide
++│   ├── MIGRATION_CHECKLIST.md # Complete checklist
++│   ├── CLOUDFLARE_DEPLOYMENT.md
++│   └── ...
++├── public/                   # Static assets
++├── src/
++│   ├── components/           # React components
++│   ├── db/                 # Database operations (cloud-db.ts)
++│   ├── utils/             # Utilities (supabase.ts, dateUtils, etc.)
++│   ├── pages/               # Page components
++│   ├── store/              # Zustand store
++│   └── utils/             # Utility functions
++├── .env.example            # Environment variables template
++├── package.json
++└── tsconfig.json
++```
++
++## 🔐 Security
++
++- Row-Level Security (RLS) on all database tables
++- Clerk JWT tokens for authentication
++- User data isolation via Clerk user IDs
++- Secure API keys via environment variables
++
++## 🌐 Deployment
++
++### Cloudflare Pages (Recommended)
++1. Push code to Git repository
++2. Connect repository to Cloudflare Pages
++3. Build command: `npm run build`
++4. Output directory: `dist`
++5. Add environment variables in Pages settings
++6. Deploy!
++
++See [docs/CLOUDFLARE_DEPLOYMENT.md](docs/CLOUDFLARE_DEPLOYMENT.md) for detailed guide.
++
++### Other Platforms
++The app uses static files and can be deployed to:
++- Vercel
++- Netlify
++- GitHub Pages
++- Any static hosting provider
++
++## 📱 Mobile App
++
++To build a native Android/iOS app, see [docs/android_migration_guide.md](docs/android_migration_guide.md).
++
++## 🤝 Contributing
++
++1. Fork the repository
++2. Create a feature branch
++3. Commit your changes
++4. Push to the branch
++5. Open a Pull Request
++
++## 📄 License
++
++This project is licensed under the MIT License.
++
++## 🆘 Support
++
++For help:
++- Check the [docs/](docs/) folder
++- Review the [Documentation Index](docs/README.md)
++- Check code comments in `src/` directory
++
++## 🎯 Roadmap
++
++- [ ] Real-time sync with Supabase subscriptions
++- [ ] Offline support with conflict resolution
++- [ ] Data export (PDF, CSV)
++- [ ] Import from other calendar apps
++- [ ] Notifications for upcoming lectures
++- [ ] Analytics dashboard with charts
+diff --git a/android_migration_guide.md b/android_migration_guide.md
+deleted file mode 100644
+index 4209c3f..0000000
+--- a/android_migration_guide.md
++++ /dev/null
+@@ -1,82 +0,0 @@
+-# Android App Migration Guide
+-
+-This document outlines the strategies for converting the Attendance Tracker PWA into a native Android application.
+-
+-## Option 1: Capacitor (Recommended for Speed)
+-Capacitor allows you to wrap your existing React web application into a native Android container with minimal code changes.
+-
+-### Steps:
+-1.  **Install Capacitor**:
+-    ```bash
+-    npm install @capacitor/core @capacitor/cli @capacitor/android
+-    npx cap init
+-    ```
+-2.  **Build the Web App**:
+-    ```bash
+-    npm run build
+-    ```
+-3.  **Add Android Platform**:
+-    ```bash
+-    npx cap add android
+-    ```
+-4.  **Sync**:
+-    ```bash
+-    npx cap sync
+-    ```
+-5.  **Open in Android Studio**:
+-    ```bash
+-    npx cap open android
+-    ```
+-6.  **Permissions**: Update `AndroidManifest.xml` for any required permissions (e.g., Camera for QR codes).
+-
+-### Pros:
+--   Reuses 99% of the code.
+--   Fastest time to market.
+--   Access to native plugins (Camera, Geolocation, Notifications).
+-
+-### Cons:
+--   UI is still web-based (though with high-quality CSS it feels native).
+-
+-## Option 2: React Native (Recommended for Native Feel)
+-React Native renders actual native Android UI components, offering better performance and a truly native feel.
+-
+-### Steps:
+-1.  **Initialize React Native Project**:
+-    ```bash
+-    npx react-native init AttendanceTrackerNative
+-    ```
+-2.  **Share Logic**:
+-    -   Extract business logic (Zustand stores, hooks, utility functions) into a shared package or monorepo structure.
+-    -   The `src/store`, `src/utils`, and `src/hooks` directories can largely be reused.
+-3.  **Rewrite UI**:
+-    -   Replace HTML/CSS (div, span, className) with React Native components (View, Text, StyleSheet).
+-    -   Replace `react-router-dom` with `react-navigation`.
+-4.  **Database**:
+-    -   Replace `idb` (IndexedDB) with `AsyncStorage` or `SQLite` (e.g., `react-native-quick-sqlite`).
+-
+-### Pros:
+--   True native performance and look-and-feel.
+--   Better gesture handling.
+-
+-### Cons:
+--   Requires rewriting the UI layer.
+--   Different navigation and storage paradigms.
+-
+-## Option 3: Trusted Web Activity (TWA)
+-Publish the PWA directly to the Google Play Store using a TWA container.
+-
+-### Steps:
+-1.  Use [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap) CLI to generate the Android project.
+-2.  Ensure the PWA meets installability criteria (manifest.json, service worker, HTTPS).
+-3.  Build and sign the APK/AAB.
+-
+-### Pros:
+--   Simplest if you just want a Play Store presence.
+--   Auto-updates with the web deployment.
+-
+-### Cons:
+--   Requires internet connection for first load (unless offline-first is perfectly implemented).
+--   Limited native API access compared to Capacitor.
+-
+-## Recommendation
+-Start with **Option 1 (Capacitor)**. It allows you to keep the "Apple-like" web UI you are building now and simply wrap it. If performance becomes an issue, migrate to **Option 2 (React Native)** later, reusing your Zustand stores and logic.
+diff --git a/implementation_plan.md b/implementation_plan.md
+deleted file mode 100644
+index 3561295..0000000
+--- a/implementation_plan.md
++++ /dev/null
+@@ -1,58 +0,0 @@
+-# Attendance Tracker App - Implementation Plan
+-
+-# Goal Description
+-Complete the "Custom Themes" feature by ensuring the selected theme color is applied consistently across the entire application. Then, begin the "Smart Timetable Import" feature by integrating `tesseract.js` for OCR.
+-
+-## User Review Required
+-- **Theme Strategy**: 
+-    - "Present"/"Absent" actions will RETAIN their Green/Red semantic colors for clarity.
+-    - Primary actions (Add Lecture, Navigation active state) and accents (Focus rings, Selected states) will use the User Selected Theme.
+-    - `Button.tsx` shadow and focus rings will be updated to match the theme or be neutral.
+-
+-## Proposed Changes
+-
+-### Theme Consistency
+-#### [MODIFY] [src/components/ui/Button.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/components/ui/Button.tsx)
+-- Remove hardcoded `shadow-blue-500/20` and `focus:ring-blue-500/20`.
+-- Use `theme.ring` or a neutral shadow/ring.
+-
+-#### [MODIFY] [src/components/LectureForm.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/components/LectureForm.tsx)
+-- Replace hardcoded `focus:ring-blue-500` with `theme.ring`.
+-- Replace hardcoded `bg-blue-100 text-blue-700` for selected days with `theme.bgLight` and `theme.text`.
+-
+-#### [MODIFY] [src/pages/Lectures.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/pages/Lectures.tsx)
+-- Update "Add Lecture" FAB to use `theme.primary`.
+-
+-#### [MODIFY] [src/pages/Dashboard.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/pages/Dashboard.tsx)
+-- Update "Today" header or empty state to use `theme.text` or `theme.bgLight` for better branding.
+-- Ensure "Present"/"Absent" buttons remain Green/Red but check if any other elements need theming.
+-
+-### Smart Timetable Import (OCR)
+-#### [NEW] [src/utils/ocrUtils.ts](file:///d:/Ayan/Make/Attendance-Tracker-1/src/utils/ocrUtils.ts)
+-- Implement `processImage(file: File): Promise<string>` using `tesseract.js`.
+-- Implement `parseTimetable(text: string): Lecture[]` (heuristic parsing).
+-
+-#### [NEW] [src/components/OCRUploader.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/components/OCRUploader.tsx)
+-- UI for uploading/capturing image.
+-- Display loading state while processing.
+-- Show parsed results for confirmation.
+-
+-#### [MODIFY] [src/pages/Lectures.tsx](file:///d:/Ayan/Make/Attendance-Tracker-1/src/pages/Lectures.tsx)
+-- Add "Import Timetable" button (next to "Add Lecture").
+-- Integrate `OCRUploader` modal.
+-
+-## Verification Plan
+-### Automated Tests
+-- `npm run build` to ensure no type errors.
+-
+-### Manual Verification
+-1.  **Theme Check**:
+-    -   Go to Settings, change theme to "Purple".
+-    -   Verify "Add Lecture" button in Lectures page is Purple.
+-    -   Verify Focus rings in Lecture Form are Purple.
+-    -   Verify Selected days in Lecture Form are Purple.
+-    -   Verify Navigation active state is Purple.
+-2.  **OCR Check**:
+-    -   Click "Import Timetable".
+-    -   Upload a sample timetable image.
+-    -   Verify text is extracted and parsed (check console logs or UI).
+diff --git a/package-lock.json b/package-lock.json
+index 39f2af2..c3af5c9 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -13,6 +13,7 @@
+         "@capacitor/core": "^7.4.4",
+         "@capacitor/local-notifications": "^7.0.3",
+         "@clerk/clerk-react": "^5.59.3",
++        "@supabase/supabase-js": "^2.90.1",
+         "class-variance-authority": "^0.7.1",
+         "clsx": "^2.1.1",
+         "date-fns": "^4.1.0",
+@@ -1665,6 +1666,86 @@
+         "win32"
+       ]
+     },
++    "node_modules/@supabase/auth-js": {
++      "version": "2.90.1",
++      "resolved": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.90.1.tgz",
++      "integrity": "sha512-vxb66dgo6h3yyPbR06735Ps+dK3hj0JwS8w9fdQPVZQmocSTlKUW5MfxSy99mN0XqCCuLMQ3jCEiIIUU23e9ng==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/functions-js": {
++      "version": "2.90.1",
++      "resolved": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.90.1.tgz",
++      "integrity": "sha512-x9mV9dF1Lam9qL3zlpP6mSM5C9iqMPtF5B/tU1Jj/F0ufX5mjDf9ghVBaErVxmrQJRL4+iMKWKY2GnODkpS8tw==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/postgrest-js": {
++      "version": "2.90.1",
++      "resolved": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.90.1.tgz",
++      "integrity": "sha512-jh6vqzaYzoFn3raaC0hcFt9h+Bt+uxNRBSdc7PfToQeRGk7PDPoweHsbdiPWREtDVTGKfu+PyPW9e2jbK+BCgQ==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/realtime-js": {
++      "version": "2.90.1",
++      "resolved": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.90.1.tgz",
++      "integrity": "sha512-PWbnEMkcQRuor8jhObp4+Snufkq8C6fBp+MchVp2qBPY1NXk/c3Iv3YyiFYVzo0Dzuw4nAlT4+ahuPggy4r32w==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/phoenix": "^1.6.6",
++        "@types/ws": "^8.18.1",
++        "tslib": "2.8.1",
++        "ws": "^8.18.2"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/storage-js": {
++      "version": "2.90.1",
++      "resolved": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.90.1.tgz",
++      "integrity": "sha512-GHY+Ps/K/RBfRj7kwx+iVf2HIdqOS43rM2iDOIDpapyUnGA9CCBFzFV/XvfzznGykd//z2dkGZhlZZprsVFqGg==",
++      "license": "MIT",
++      "dependencies": {
++        "iceberg-js": "^0.8.1",
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/supabase-js": {
++      "version": "2.90.1",
++      "resolved": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.90.1.tgz",
++      "integrity": "sha512-U8KaKGLUgTIFHtwEW1dgw1gK7XrdpvvYo7nzzqPx721GqPe8WZbAiLh/hmyKLGBYQ/mmQNr20vU9tWSDZpii3w==",
++      "license": "MIT",
++      "dependencies": {
++        "@supabase/auth-js": "2.90.1",
++        "@supabase/functions-js": "2.90.1",
++        "@supabase/postgrest-js": "2.90.1",
++        "@supabase/realtime-js": "2.90.1",
++        "@supabase/storage-js": "2.90.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
+     "node_modules/@tailwindcss/node": {
+       "version": "4.1.17",
+       "resolved": "https://registry.npmjs.org/@tailwindcss/node/-/node-4.1.17.tgz",
+@@ -2014,6 +2095,12 @@
+         "undici-types": "~7.16.0"
+       }
+     },
++    "node_modules/@types/phoenix": {
++      "version": "1.6.7",
++      "resolved": "https://registry.npmjs.org/@types/phoenix/-/phoenix-1.6.7.tgz",
++      "integrity": "sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==",
++      "license": "MIT"
++    },
+     "node_modules/@types/react": {
+       "version": "19.2.6",
+       "resolved": "https://registry.npmjs.org/@types/react/-/react-19.2.6.tgz",
+@@ -2040,6 +2127,15 @@
+       "integrity": "sha512-+OpjSaq85gvlZAYINyzKpLeiFkSC4EsC6IIiT6v6TLSU5k5U83fHGj9Lel8oKEXM0HqgrMVCjXPDPVICtxF7EQ==",
+       "license": "MIT"
+     },
++    "node_modules/@types/ws": {
++      "version": "8.18.1",
++      "resolved": "https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz",
++      "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/node": "*"
++      }
++    },
+     "node_modules/@typescript-eslint/eslint-plugin": {
+       "version": "8.47.0",
+       "resolved": "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-8.47.0.tgz",
+@@ -3455,6 +3551,15 @@
+         "hermes-estree": "0.25.1"
+       }
+     },
++    "node_modules/iceberg-js": {
++      "version": "0.8.1",
++      "resolved": "https://registry.npmjs.org/iceberg-js/-/iceberg-js-0.8.1.tgz",
++      "integrity": "sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
+     "node_modules/idb": {
+       "version": "8.0.3",
+       "resolved": "https://registry.npmjs.org/idb/-/idb-8.0.3.tgz",
+@@ -5404,6 +5509,27 @@
+         "url": "https://github.com/chalk/wrap-ansi?sponsor=1"
+       }
+     },
++    "node_modules/ws": {
++      "version": "8.19.0",
++      "resolved": "https://registry.npmjs.org/ws/-/ws-8.19.0.tgz",
++      "integrity": "sha512-blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=10.0.0"
++      },
++      "peerDependencies": {
++        "bufferutil": "^4.0.1",
++        "utf-8-validate": ">=5.0.2"
++      },
++      "peerDependenciesMeta": {
++        "bufferutil": {
++          "optional": true
++        },
++        "utf-8-validate": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/xml2js": {
+       "version": "0.6.2",
+       "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.6.2.tgz",
+diff --git a/package.json b/package.json
+index dda641e..9806c7f 100644
+--- a/package.json
++++ b/package.json
+@@ -15,6 +15,7 @@
+     "@capacitor/core": "^7.4.4",
+     "@capacitor/local-notifications": "^7.0.3",
+     "@clerk/clerk-react": "^5.59.3",
++    "@supabase/supabase-js": "^2.90.1",
+     "class-variance-authority": "^0.7.1",
+     "clsx": "^2.1.1",
+     "date-fns": "^4.1.0",
+diff --git a/src/App.tsx b/src/App.tsx
+index 680ed30..71393f7 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -14,18 +14,21 @@ import { useAuth } from '@clerk/clerk-react';
+ function App() {
+   const fetchData = useStore((state) => state.fetchData);
+   const setUserId = useStore((state) => state.setUserId);
+-  const { userId, isLoaded } = useAuth();
++  const setGetToken = useStore((state) => state.setGetToken);
++  const { userId, isLoaded, getToken } = useAuth();
+ 
+   useEffect(() => {
+     if (isLoaded) {
+       if (userId) {
+         setUserId(userId);
++        setGetToken(async () => await getToken());
+         fetchData();
+       } else {
+         setUserId(null);
++        setGetToken(async () => null);
+       }
+     }
+-  }, [userId, isLoaded, fetchData, setUserId]);
++  }, [userId, isLoaded, fetchData, setUserId, setGetToken, getToken]);
+ 
+   return (
+     <Routes>
+diff --git a/src/components/ManualTimetableEntry.tsx b/src/components/ManualTimetableEntry.tsx
+index b87a4ca..3078cf3 100644
+--- a/src/components/ManualTimetableEntry.tsx
++++ b/src/components/ManualTimetableEntry.tsx
+@@ -4,7 +4,7 @@ import { X, Plus, Trash2, Calendar } from 'lucide-react';
+ import { Button } from './ui/Button';
+ import { Card } from './ui/Card';
+ import { useStore } from '../store/useStore';
+-import type { Lecture } from '../db/db';
++import type { Lecture } from '../db/cloud-db';
+ import { clsx } from 'clsx';
+ import { getThemeClasses } from '../utils/themeUtils';
+ 
+diff --git a/src/components/OCRUploader.tsx b/src/components/OCRUploader.tsx
+index 6984baf..01537b2 100644
+--- a/src/components/OCRUploader.tsx
++++ b/src/components/OCRUploader.tsx
+@@ -5,7 +5,7 @@ import { Button } from './ui/Button';
+ import { Card } from './ui/Card';
+ import { processImage, parseTimetable } from '../utils/ocrUtils';
+ import { useStore } from '../store/useStore';
+-import type { Lecture } from '../db/db';
++import type { Lecture } from '../db/cloud-db';
+ import { clsx } from 'clsx';
+ 
+ interface OCRUploaderProps {
+diff --git a/src/pages/Calendar.tsx b/src/pages/Calendar.tsx
+index 27ca081..d8a823a 100644
+--- a/src/pages/Calendar.tsx
++++ b/src/pages/Calendar.tsx
+@@ -16,7 +16,7 @@ import {
+     startOfWeek,
+     endOfWeek
+ } from 'date-fns';
+-import { isLectureScheduledForDate } from '../utils/dateUtils';
++import { isLectureScheduledForDate, getScheduleForDate } from '../utils/dateUtils';
+ import { clsx } from 'clsx';
+ import { AnimatePresence } from 'framer-motion';
+ import { getThemeClasses } from '../utils/themeUtils';
+@@ -158,11 +158,12 @@ export default function Calendar() {
+                         {lecturesForSelectedDate.map(lecture => {
+                             const status = getAttendanceStatus(lecture.id, selectedDateStr);
+ 
++                            const scheduleForDate = getScheduleForDate(lecture, selectedDate);
+                             return (
+                                 <Card key={lecture.id} className="flex justify-between items-center">
+                                     <div>
+                                         <h3 className="font-bold">{lecture.name}</h3>
+-                                        <p className="text-sm text-gray-500">{lecture.schedules?.[0]?.startTime || 'N/A'} - {lecture.schedules?.[0]?.endTime || 'N/A'}</p>
++                                        <p className="text-sm text-gray-500">{scheduleForDate?.startTime || 'N/A'} - {scheduleForDate?.endTime || 'N/A'}</p>
+                                     </div>
+ 
+                                     {status ? (
+diff --git a/src/pages/Dashboard.tsx b/src/pages/Dashboard.tsx
+index b959fc3..1f95985 100644
+--- a/src/pages/Dashboard.tsx
++++ b/src/pages/Dashboard.tsx
+@@ -1,5 +1,5 @@
+ import { useStore } from '../store/useStore';
+-import { getTodayLectures } from '../utils/dateUtils';
++import { getTodayLectures, getScheduleForDate } from '../utils/dateUtils';
+ import { Card } from '../components/ui/Card';
+ import { Button } from '../components/ui/Button';
+ import { Check, X, Clock, MapPin } from 'lucide-react';
+@@ -42,6 +42,7 @@ export default function Dashboard() {
+                 <div className="space-y-4">
+                     {todayLectures.map(lecture => {
+                         const status = getAttendanceStatus(lecture.id);
++                        const scheduleForDate = getScheduleForDate(lecture, today);
+ 
+                         return (
+                             <Card key={lecture.id} className={`border-l-4 ${status?.status === 'present' ? 'border-l-green-500' : status?.status === 'absent' ? 'border-l-red-500' : 'border-l-blue-500'}`}>
+@@ -53,12 +54,12 @@ export default function Dashboard() {
+                                     <div className="text-right">
+                                         <div className="flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-300">
+                                             <Clock size={14} />
+-                                            {lecture.schedules?.[0]?.startTime || 'N/A'}
++                                            {scheduleForDate?.startTime || 'N/A'}
+                                         </div>
+-                                        {lecture.schedules?.[0]?.location && (
++                                        {scheduleForDate?.location && (
+                                             <div className="flex items-center gap-1 text-xs text-gray-400 mt-1 justify-end">
+                                                 <MapPin size={12} />
+-                                                {lecture.schedules[0].location}
++                                                {scheduleForDate?.location}
+                                             </div>
+                                         )}
+                                     </div>
+diff --git a/src/pages/Stats.tsx b/src/pages/Stats.tsx
+index 4167740..b1efbd6 100644
+--- a/src/pages/Stats.tsx
++++ b/src/pages/Stats.tsx
+@@ -13,15 +13,17 @@ export default function Stats() {
+ 
+     const calculateStats = (lectureId: string) => {
+         const lectureAttendance = attendance.filter(a => a.lectureId === lectureId);
+-        const total = lectureAttendance.length;
+-        const present = lectureAttendance.filter(a => a.status === 'present').length;
++        const relevantAttendance = lectureAttendance.filter(a => a.status !== 'excused');
++        const total = relevantAttendance.length;
++        const present = relevantAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
+         const percentage = total === 0 ? 0 : Math.round((present / total) * 100);
+         return { total, present, percentage };
+     };
+ 
+     const overallStats = () => {
+-        const totalLectures = attendance.length;
+-        const totalPresent = attendance.filter(a => a.status === 'present').length;
++        const relevantAttendance = attendance.filter(a => a.status !== 'excused');
++        const totalLectures = relevantAttendance.length;
++        const totalPresent = relevantAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
+         const percentage = totalLectures === 0 ? 0 : Math.round((totalPresent / totalLectures) * 100);
+         return { percentage, totalPresent, totalLectures };
+     };
+diff --git a/src/pages/landing.tsx b/src/pages/landing.tsx
+index 92e1dfd..33535b0 100644
+--- a/src/pages/landing.tsx
++++ b/src/pages/landing.tsx
+@@ -1,9 +1,36 @@
+-import { SignInButton, SignUpButton } from '@clerk/clerk-react';
++import { SignInButton, SignUpButton, useAuth } from '@clerk/clerk-react';
++import { Link } from 'react-router-dom';
+ import { motion } from 'framer-motion';
+ import { Button } from '../components/ui/Button';
+ import { Card } from '../components/ui/Card';
+ import { Check, Calendar, BarChart2, Palette, Upload } from 'lucide-react';
+ 
++const AuthButton = ({ variant = "primary", children }: { variant?: "primary" | "secondary", children: React.ReactNode }) => {
++    const { userId, isLoaded } = useAuth();
++
++    if (!isLoaded) {
++        return <Button variant={variant} size="lg" disabled>Loading...</Button>;
++    }
++
++    if (userId) {
++        return (
++            <Link to="/dashboard">
++                <Button variant={variant} size="lg">
++                    {children}
++                </Button>
++            </Link>
++        );
++    }
++
++    return (
++        <SignInButton mode="modal">
++            <Button variant={variant} size="lg">
++                {children}
++            </Button>
++        </SignInButton>
++    );
++};
++
+ export default function Landing() {
+     return (
+         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
+@@ -18,7 +45,7 @@ export default function Landing() {
+                         Attendance Tracker
+                     </h1>
+                     <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+-                        Track your attendance with ease. Simple, fast, and stays on your device.
++                        Track your attendance with ease. Simple, fast, and accessible from any device.
+                     </p>
+                 </motion.div>
+ 
+@@ -28,11 +55,7 @@ export default function Landing() {
+                     transition={{ duration: 0.6, delay: 0.2 }}
+                 >
+                     <div className="flex justify-center gap-4 mb-12">
+-                        <SignInButton mode="modal">
+-                            <Button variant="primary" size="lg">
+-                                Sign In
+-                            </Button>
+-                        </SignInButton>
++                        <AuthButton variant="primary">Sign In</AuthButton>
+                         <SignUpButton mode="modal">
+                             <Button variant="secondary" size="lg">
+                                 Sign Up Free
+@@ -174,11 +197,7 @@ export default function Landing() {
+                         Never miss a lecture again with our simple attendance tracker
+                     </p>
+                     <div className="flex flex-col md:flex-row justify-center gap-4">
+-                        <SignInButton mode="modal">
+-                            <Button className="!bg-white !text-blue-600 hover:!bg-blue-50 !text-lg !py-4 !px-8">
+-                                Get Started Free
+-                            </Button>
+-                        </SignInButton>
++                        <AuthButton variant="primary">Get Started Free</AuthButton>
+                     </div>
+                     <p className="text-blue-200 text-sm mt-4">
+                         No credit card required • Your data stays on your device
+@@ -186,7 +205,7 @@ export default function Landing() {
+                 </motion.section>
+ 
+                 <footer className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
+-                    <p>Works offline with IndexedDB • Your data stays on your device</p>
++                    <p>Cloud sync with Supabase • Access from any device</p>
+                 </footer>
+             </div>
+         </div>
+diff --git a/src/store/useStore.ts b/src/store/useStore.ts
+index 9f86e5c..286c4ce 100644
+--- a/src/store/useStore.ts
++++ b/src/store/useStore.ts
+@@ -1,22 +1,39 @@
+ import { create } from 'zustand';
+-import { dbPromise, type Lecture, type AttendanceRecord } from '../db/db';
++import { 
++    initDB, 
++    getAllLectures, 
++    putLecture, 
++    deleteLecture as deleteLectureDB,
++    getAllAttendance, 
++    putAttendance, 
++    getAttendanceForLecture as getAttendanceForLectureDB,
++    deleteAttendance as deleteAttendanceDB,
++    clearAllLectures as clearAllLecturesDB,
++    clearAllAttendance as clearAllAttendanceDB,
++    clearAllData as clearAllDataDB,
++    type Lecture, 
++    type AttendanceRecord
++} from '../db/cloud-db';
+ 
+ interface State {
+     lectures: Lecture[];
+     attendance: AttendanceRecord[];
+     userId: string | null;
++    getToken: (() => Promise<string | null>) | null;
+     themeColor: 'blue' | 'purple' | 'green' | 'red' | 'orange';
+     isLoading: boolean;
+     error: string | null;
+ 
+     // Actions
+     setUserId: (userId: string | null) => void;
++    setGetToken: (getToken: () => Promise<string | null>) => void;
+     setThemeColor: (color: 'blue' | 'purple' | 'green' | 'red' | 'orange') => void;
+     fetchData: () => Promise<void>;
+     addLecture: (lecture: Omit<Lecture, 'id' | 'userId'>) => Promise<void>;
+     updateLecture: (id: string, updates: Partial<Lecture>) => Promise<void>;
+     deleteLecture: (id: string) => Promise<void>;
+     markAttendance: (record: Omit<AttendanceRecord, 'id' | 'userId' | 'timestamp'>) => Promise<void>;
++    deleteAttendance: (id: string) => Promise<void>;
+     getAttendanceForLecture: (lectureId: string) => AttendanceRecord[];
+     clearAllData: () => Promise<void>;
+     clearAllLectures: () => Promise<void>;
+@@ -27,25 +44,34 @@ export const useStore = create<State>((set, get) => ({
+     lectures: [],
+     attendance: [],
+     userId: null,
++    getToken: null,
+     themeColor: 'blue',
+     isLoading: true,
+     error: null,
+ 
+     setThemeColor: (color) => set({ themeColor: color }),
+     setUserId: (userId) => set({ userId }),
++    setGetToken: (getToken) => set({ getToken }),
+ 
+     fetchData: async () => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) {
++        
++        if (!getToken || !userId) {
+             set({ lectures: [], attendance: [], isLoading: false });
+             return;
+         }
+ 
+         try {
+             set({ isLoading: true });
+-            const db = await dbPromise;
+-            const lectures = await db.getAllFromIndex('lectures', 'by-userId', userId);
+-            const attendance = await db.getAllFromIndex('attendance', 'by-userId', userId);
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++            
++            const [lectures, attendance] = await Promise.all([
++                getAllLectures(supabase, userId),
++                getAllAttendance(supabase, userId),
++            ]);
++            
+             set({ lectures, attendance, isLoading: false });
+         } catch (error) {
+             console.error(error);
+@@ -54,91 +80,105 @@ export const useStore = create<State>((set, get) => ({
+     },
+ 
+     addLecture: async (lectureData) => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) return;
++        if (!getToken || !userId) return;
+ 
+         const id = crypto.randomUUID();
+         const newLecture: Lecture = { ...lectureData, id, userId };
+-        const db = await dbPromise;
+-        await db.put('lectures', newLecture);
+-        set((state) => ({ lectures: [...state.lectures, newLecture] }));
++        
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++            await putLecture(supabase, newLecture);
++            set((state) => ({ lectures: [...state.lectures, newLecture] }));
++        } catch (error) {
++            console.error('Failed to add lecture:', error);
++            throw error;
++        }
+     },
+ 
+     updateLecture: async (id, updates) => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) return;
+-
+-        const db = await dbPromise;
+-        const lecture = await db.get('lectures', id);
+-        if (lecture && lecture.userId === userId) {
+-            const updatedLecture = { ...lecture, ...updates };
+-            await db.put('lectures', updatedLecture);
+-            set((state) => ({
+-                lectures: state.lectures.map((l) => (l.id === id ? updatedLecture : l)),
+-            }));
++        if (!getToken || !userId) return;
++
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++            const lecture = get().lectures.find((l) => l.id === id);
++            
++            if (lecture && lecture.userId === userId) {
++                const updatedLecture = { ...lecture, ...updates };
++                await putLecture(supabase, updatedLecture);
++                set((state) => ({
++                    lectures: state.lectures.map((l) => (l.id === id ? updatedLecture : l)),
++                }));
++            }
++        } catch (error) {
++            console.error('Failed to update lecture:', error);
++            throw error;
+         }
+     },
+ 
+     deleteLecture: async (id) => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) return;
+-
+-        const db = await dbPromise;
+-        const lecture = await db.get('lectures', id);
+-        if (lecture && lecture.userId === userId) {
+-            await db.delete('lectures', id);
+-
+-            // Cascading delete for attendance
+-            const tx = db.transaction('attendance', 'readwrite');
+-            const index = tx.store.index('by-lecture');
+-            let cursor = await index.openCursor(IDBKeyRange.only(id));
+-            while (cursor) {
+-                const record = await cursor.value;
+-                if (record && record.userId === userId) {
+-                    await cursor.delete();
+-                }
+-                cursor = await cursor.continue();
+-            }
+-            await tx.done;
++        if (!getToken || !userId) return;
+ 
+-            set((state) => ({
+-                lectures: state.lectures.filter((l) => l.id !== id),
+-                attendance: state.attendance.filter((a) => a.lectureId !== id || a.userId !== userId),
+-            }));
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++            const lecture = get().lectures.find((l) => l.id === id);
++            
++            if (lecture && lecture.userId === userId) {
++                await deleteLectureDB(supabase, id);
++                
++                set((state) => ({
++                    lectures: state.lectures.filter((l) => l.id !== id),
++                    attendance: state.attendance.filter((a) => a.lectureId !== id),
++                }));
++            }
++        } catch (error) {
++            console.error('Failed to delete lecture:', error);
++            throw error;
+         }
+     },
+ 
+     markAttendance: async (recordData) => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) return;
+-
+-        const db = await dbPromise;
+-
+-        // Check if attendance record already exists for this lecture and date
+-        const tx = db.transaction('attendance', 'readwrite');
+-        const index = tx.store.index('by-userId-lecture-date');
+-        const existingRecord = await index.get([userId, recordData.lectureId, recordData.date]);
+-
+-        if (existingRecord) {
+-            // Update existing record
+-            const updatedRecord: AttendanceRecord = {
+-                ...existingRecord,
+-                status: recordData.status,
+-                timestamp: Date.now()
+-            };
+-            await db.put('attendance', updatedRecord);
+-            set((state) => ({
+-                attendance: state.attendance.map((a) =>
+-                    a.id === existingRecord.id ? updatedRecord : a
+-                )
+-            }));
+-        } else {
+-            // Create new record
+-            const id = crypto.randomUUID();
+-            const timestamp = Date.now();
+-            const newRecord: AttendanceRecord = { ...recordData, id, userId, timestamp };
+-            await db.put('attendance', newRecord);
+-            set((state) => ({ attendance: [...state.attendance, newRecord] }));
++        if (!getToken || !userId) return;
++
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++
++            const existingRecords = await getAttendanceForLectureDB(supabase, recordData.lectureId, userId);
++            const existingRecord = existingRecords.find((r) => r.date === recordData.date);
++
++            if (existingRecord) {
++                const updatedRecord: AttendanceRecord = {
++                    ...existingRecord,
++                    status: recordData.status,
++                    timestamp: Date.now(),
++                };
++                await putAttendance(supabase, updatedRecord);
++                set((state) => ({
++                    attendance: state.attendance.map((a) =>
++                        a.id === existingRecord.id ? updatedRecord : a
++                    ),
++                }));
++            } else {
++                const id = crypto.randomUUID();
++                const timestamp = Date.now();
++                const newRecord: AttendanceRecord = { ...recordData, id, userId, timestamp };
++                await putAttendance(supabase, newRecord);
++                set((state) => ({ attendance: [...state.attendance, newRecord] }));
++            }
++        } catch (error) {
++            console.error('Failed to mark attendance:', error);
++            throw error;
+         }
+     },
+ 
+@@ -146,65 +186,74 @@ export const useStore = create<State>((set, get) => ({
+         return get().attendance.filter((a) => a.lectureId === lectureId);
+     },
+ 
+-    clearAllData: async () => {
++    deleteAttendance: async (id) => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) return;
++        if (!getToken || !userId) return;
+ 
+-        const db = await dbPromise;
+-        const tx = db.transaction(['lectures', 'attendance'], 'readwrite');
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
+ 
+-        const lectureIndex = tx.objectStore('lectures').index('by-userId');
+-        const attendanceIndex = tx.objectStore('attendance').index('by-userId');
++            const attendanceRecord = get().attendance.find((a) => a.id === id);
+ 
+-        let lectureCursor = await lectureIndex.openCursor(IDBKeyRange.only(userId));
+-        while (lectureCursor) {
+-            await lectureCursor.delete();
+-            lectureCursor = await lectureCursor.continue();
++            if (attendanceRecord && attendanceRecord.userId === userId) {
++                await deleteAttendanceDB(supabase, id, userId);
++                set((state) => ({
++                    attendance: state.attendance.filter((a) => a.id !== id),
++                }));
++            }
++        } catch (error) {
++            console.error('Failed to delete attendance:', error);
++            throw error;
+         }
++    },
+ 
+-        let attendanceCursor = await attendanceIndex.openCursor(IDBKeyRange.only(userId));
+-        while (attendanceCursor) {
+-            await attendanceCursor.delete();
+-            attendanceCursor = await attendanceCursor.continue();
+-        }
++    clearAllData: async () => {
++        const getToken = get().getToken;
++        const userId = get().userId;
++        if (!getToken || !userId) return;
+ 
+-        await tx.done;
+-        set({ lectures: [], attendance: [] });
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++            await clearAllDataDB(supabase, userId);
++            set({ lectures: [], attendance: [] });
++        } catch (error) {
++            console.error('Failed to clear data:', error);
++            throw error;
++        }
+     },
+ 
+     clearAllLectures: async () => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) return;
++        if (!getToken || !userId) return;
+ 
+-        const db = await dbPromise;
+-        const tx = db.transaction('lectures', 'readwrite');
+-        const index = tx.objectStore('lectures').index('by-userId');
+-
+-        let cursor = await index.openCursor(IDBKeyRange.only(userId));
+-        while (cursor) {
+-            await cursor.delete();
+-            cursor = await cursor.continue();
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++            await clearAllLecturesDB(supabase, userId);
++            set({ lectures: [] });
++        } catch (error) {
++            console.error('Failed to clear lectures:', error);
++            throw error;
+         }
+-
+-        await tx.done;
+-        set({ lectures: [] });
+     },
+ 
+     clearAllAttendance: async () => {
++        const getToken = get().getToken;
+         const userId = get().userId;
+-        if (!userId) return;
++        if (!getToken || !userId) return;
+ 
+-        const db = await dbPromise;
+-        const tx = db.transaction('attendance', 'readwrite');
+-        const index = tx.objectStore('attendance').index('by-userId');
+-
+-        let cursor = await index.openCursor(IDBKeyRange.only(userId));
+-        while (cursor) {
+-            await cursor.delete();
+-            cursor = await cursor.continue();
++        try {
++            const token = await getToken();
++            const supabase = await initDB(() => Promise.resolve(token!));
++            await clearAllAttendanceDB(supabase, userId);
++            set({ attendance: [] });
++        } catch (error) {
++            console.error('Failed to clear attendance:', error);
++            throw error;
+         }
+-
+-        await tx.done;
+-        set({ attendance: [] });
+     },
+ }));
+diff --git a/src/utils/dateUtils.ts b/src/utils/dateUtils.ts
+index 0f32704..c31a2c9 100644
+--- a/src/utils/dateUtils.ts
++++ b/src/utils/dateUtils.ts
+@@ -15,6 +15,28 @@ export function isLectureScheduledForDate(lecture: Lecture, date: Date): boolean
+     );
+ }
+ 
++
++/**
++ * Get the specific schedule for a lecture on a given date
++ * Returns the schedule that matches the day, or the first schedule if none match
++ */
++export function getScheduleForDate(lecture: Lecture, date: Date) {
++    const dayName = format(date, 'EEE'); // Mon, Tue, etc.
++
++    // Safety check: handle lectures without schedules array (pre-migration)
++    if (!lecture.schedules || !Array.isArray(lecture.schedules) || lecture.schedules.length === 0) {
++        return null;
++    }
++
++    // Find the schedule that matches this day
++    const matchingSchedule = lecture.schedules.find(schedule =>
++        schedule.days.includes(dayName)
++    );
++
++    // Return the matching schedule, or the first one as fallback
++    return matchingSchedule || lecture.schedules[0];
++}
++
+ export const getTodayLectures = (lectures: Lecture[]): Lecture[] => {
+     const today = new Date();
+     return lectures.filter(lecture => isLectureScheduledForDate(lecture, today));
+diff --git a/src/utils/ocrUtils.ts b/src/utils/ocrUtils.ts
+index 9bc0a5c..207b64c 100644
+--- a/src/utils/ocrUtils.ts
++++ b/src/utils/ocrUtils.ts
+@@ -1,5 +1,5 @@
+ import Tesseract from 'tesseract.js';
+-import type { Lecture } from '../db/db';
++import type { Lecture } from '../db/cloud-db';
+ 
+ export async function processImage(file: File): Promise<string> {
+     const worker = await Tesseract.createWorker('eng');
+diff --git a/task.md b/task.md
+deleted file mode 100644
+index db1c8d2..0000000
+--- a/task.md
++++ /dev/null
+@@ -1,40 +0,0 @@
+-# Attendance Tracker App - Task List
+-
+-- [x] Project Initialization <!-- id: 0 -->
+-    - [x] Scaffold Vite + React + TypeScript project <!-- id: 1 -->
+-    - [x] Configure Tailwind CSS <!-- id: 2 -->
+-    - [x] Install core dependencies (Zustand, React Router, date-fns, lucide-react, idb) <!-- id: 3 -->
+-- [ ] Core Architecture Setup <!-- id: 4 -->
+-    - [x] Setup Store (Zustand) for Lectures and Attendance <!-- id: 5 -->
+-    - [x] Setup Database Layer (IndexedDB wrapper) <!-- id: 6 -->
+-    - [x] Setup Routing <!-- id: 7 -->
+-- [ ] Feature: Lecture Management (CRUD) <!-- id: 8 -->
+-    - [x] Create Lecture List View <!-- id: 9 -->
+-    - [x] Create Add/Edit Lecture Form <!-- id: 10 -->
+-    - [x] Implement Delete functionality <!-- id: 11 -->
+-- [ ] Feature: Attendance Tracking <!-- id: 12 -->
+-    - [x] Implement Dashboard with Today's Lectures <!-- id: 13 -->
+-    - [x] Implement Quick Mark (Present/Absent) <!-- id: 14 -->
+-    - [ ] Implement Calendar View <!-- id: 15 -->
+-- [ ] Feature: Statistics & Analytics <!-- id: 16 -->
+-    - [x] Calculate Attendance Percentage <!-- id: 17 -->
+-    - [x] Visual Indicators (Progress bars, Color coding) <!-- id: 18 -->
+-- [x] UI/UX Polish <!-- id: 19 -->
+-    - [x] Responsive Design <!-- id: 20 -->
+-    - [x] Dark Mode Support <!-- id: 21 -->
+-    - [x] Animations (Framer Motion or CSS) <!-- id: 22 -->
+-- [x] Documentation <!-- id: 23 -->
+-    - [x] Create Android Migration Guide <!-- id: 24 -->
+-- [x] Feature: Calendar View <!-- id: 25 -->
+-    - [x] Create Calendar Page <!-- id: 26 -->
+-    - [x] Implement Monthly View <!-- id: 27 -->
+-    - [x] Implement Attendance Editing for Past Dates <!-- id: 28 -->
+-- [ ] Feature: Smart Timetable Import (OCR) <!-- id: 29 -->
+-    - [ ] Install Tesseract.js <!-- id: 30 -->
+-    - [ ] Implement Image Upload/Capture <!-- id: 31 -->
+-    - [ ] Implement OCR Processing & Parsing Logic <!-- id: 32 -->
+-    - [ ] Create Review & Confirm UI <!-- id: 33 -->
+-- [ ] Feature: Custom Themes <!-- id: 34 -->
+-    - [ ] Create Theme Store/Context <!-- id: 35 -->
+-    - [ ] Implement Theme Selector UI <!-- id: 36 -->
+-    - [ ] Refactor UI to use Dynamic Colors <!-- id: 37 -->
+diff --git a/walkthrough.md b/walkthrough.md
+deleted file mode 100644
+index 8b074e2..0000000
+--- a/walkthrough.md
++++ /dev/null
+@@ -1,56 +0,0 @@
+-# Attendance Tracker - Walkthrough
+-
+-The Attendance Tracker is a Progressive Web App (PWA) designed to help students manage their lectures and track attendance statistics.
+-
+-## Features Implemented
+-
+-### 1. Lecture Management
+-- **Add Lectures**: Create new lectures with details like name, course code, schedule, and target percentage.
+-- **List View**: View all lectures in a clean, card-based layout.
+-- **Delete**: Remove lectures (and associated attendance data) with a single tap.
+-
+-### 2. Attendance Tracking
+-- **Dashboard**: Shows lectures scheduled for **today**.
+-- **Calendar View**: Monthly view to see past attendance. Tap any date to view or edit attendance.
+-- **Quick Mark**: Mark attendance as "Present" or "Absent" directly from the dashboard.
+-- **Visual Feedback**: Cards change color (Green/Red) based on attendance status.
+-
+-### 3. Statistics & Analytics
+-- **Overall Stats**: View your total attendance rate across all lectures.
+-- **Per-Lecture Stats**: Progress bars showing attendance % vs target %.
+-- **Visual Indicators**: Red/Green colors indicate if you are below or above your target.
+-
+-### 4. UI/UX
+-- **Apple-like Design**: Clean, modern interface with glassmorphism and smooth animations.
+-- **Dark Mode**: Fully supported (system preference).
+-- **Responsive**: Optimized for mobile devices (PWA ready).
+-
+-## How to Run
+-
+-1.  **Install Dependencies**:
+-    ```bash
+-    npm install
+-    ```
+-2.  **Start Development Server**:
+-    ```bash
+-    npm run dev
+-    ```
+-3.  **Open in Browser**:
+-    Navigate to `http://localhost:5173` (or the URL shown in terminal).
+-
+-## Building for Production
+-
+-To build the app for deployment:
+-```bash
+-npm run build
+-```
+-> **Note**: If your project folder contains special characters (like `#`), the build might fail. Please move the project to a standard path (e.g., `C:\Projects\AttendanceTracker`) before building.
+-
+-## Android Migration
+-
+-To convert this PWA into a native Android app, refer to the [Android Migration Guide](file:///C:/Users/Ayan/.gemini/antigravity/brain/276b6321-df45-4d61-b966-275127707121/android_migration_guide.md).
+-We have pre-installed Capacitor dependencies, so you can start from **Step 3** of Option 1.
+-
+-## Next Steps
+-- Add **Notifications** using Capacitor Local Notifications.
+-- Implement **Cloud Sync** for multi-device support.
