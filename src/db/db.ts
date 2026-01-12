@@ -65,11 +65,11 @@ export const initDB = async () => {
                 const allLectures = await store.getAll();
 
                 for (const lecture of allLectures) {
-                    // @ts-ignore - accessing old schema property
+                    // @ts-expect-error - accessing old schema property
                     if (lecture.schedule && !lecture.schedules) {
-                        // @ts-ignore - migrating to new schema
+                        // @ts-expect-error - migrating to new schema
                         lecture.schedules = [lecture.schedule];
-                        // @ts-ignore - removing old property
+                        // @ts-expect-error - removing old property
                         delete lecture.schedule;
                         await store.put(lecture);
                     }
